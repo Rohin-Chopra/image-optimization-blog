@@ -32,7 +32,7 @@ async function getObjectFromS3(
   });
 }
 
-export async function handler(event: S3Event) {
+export async function handler(event: S3Event): Promise<void> {
   const [record] = event.Records;
   const bucketName = record.s3.bucket.name;
   const inputImageKey = decodeURIComponent(
