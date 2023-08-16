@@ -4,8 +4,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build": "ts-node --esm esbuild.config.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "ts-node --esm esbuild.config.ts"
   },
   "keywords": [],
   "author": "",
@@ -16,10 +15,8 @@
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.119",
-    "@types/jest": "^29.5.3",
     "@types/node": "^20.4.8",
     "esbuild": "^0.19.0",
-    "jest": "^29.6.2",
     "ts-node": "^10.9.1",
     "typescript": "^5.1.6"
   }
