@@ -15,18 +15,7 @@ resource "aws_s3_bucket" "input_bucket" {
 }
 
 resource "aws_s3_bucket" "output_bucket" {
-  bucket = "image-optimiation-output-bucket" # Todo: fix name typo
-}
-
-resource "aws_s3_bucket_notification" "input_bucket_notification" {
-  bucket = aws_s3_bucket.input_bucket.id
-
-  lambda_function {
-    lambda_function_arn = module.image_optimizer_lambda.lambda_function_arn
-    events              = ["s3:ObjectCreated:*"]
-  }
-
-  depends_on = [aws_lambda_permission.allow_bucket_invoke_lambda]
+  bucket = "image-optimization-output-bucket"
 }
 
 module "sharp_lambda_layer" {
@@ -56,7 +45,7 @@ module "image_optimizer_lambda" {
   handler       = "index.handler"
   runtime       = "nodejs18.x"
   memory_size   = 2000
-  timeout       = 60
+  timeout       = 10
   environment_variables = {
     OUTPUT_S3_BUCKET_NAME = aws_s3_bucket.output_bucket.id
   }
@@ -97,4 +86,15 @@ resource "aws_lambda_permission" "allow_bucket_invoke_lambda" {
   function_name = module.image_optimizer_lambda.lambda_function_name
   principal     = "s3.amazonaws.com"
   source_arn    = aws_s3_bucket.input_bucket.arn
+}
+
+resource "aws_s3_bucket_notification" "input_bucket_notification" {
+  bucket = aws_s3_bucket.input_bucket.id
+
+  lambda_function {
+    lambda_function_arn = module.image_optimizer_lambda.lambda_function_arn
+    events              = ["s3:ObjectCreated:*"]
+  }
+
+  depends_on = [aws_lambda_permission.allow_bucket_invoke_lambda]
 }

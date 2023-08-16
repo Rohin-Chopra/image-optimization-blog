@@ -32,6 +32,27 @@ async function getObjectFromS3(
   });
 }
 
+async function compressImage(inputImageBuffer: Buffer) {
+  const sharpImage = sharp(inputImageBuffer);
+  const imageExtension = (await sharpImage.metadata()).format;
+
+  let result: Buffer | undefined;
+
+  if (imageExtension && ["jpeg", "jpg"].includes(imageExtension)) {
+    result = await sharpImage
+      .toFormat(imageExtension, {
+        mozjpeg: true,
+      })
+      .toBuffer();
+  } else if (imageExtension === "png") {
+    result = await sharpImage.toFormat("png", { quality: 80 }).toBuffer();
+  }
+
+  if (!result) throw new Error("Unsupported image format");
+
+  return result;
+}
+
 export async function handler(event: S3Event): Promise<void> {
   const [record] = event.Records;
   const bucketName = record.s3.bucket.name;
@@ -41,30 +62,13 @@ export async function handler(event: S3Event): Promise<void> {
 
   const inputImageBuffer = await getObjectFromS3(inputImageKey, bucketName);
 
-  const sharpImage = sharp(inputImageBuffer);
-  const imageExtension = (await sharpImage.metadata()).format;
-
-  let resizedImageBuffer: Buffer | undefined;
-
-  if (imageExtension && ["jpeg", "jpg"].includes(imageExtension)) {
-    resizedImageBuffer = await sharpImage
-      .toFormat(imageExtension, {
-        mozjpeg: true,
-      })
-      .toBuffer();
-  } else if (imageExtension === "png") {
-    resizedImageBuffer = await sharpImage
-      .toFormat("png", { quality: 80 })
-      .toBuffer();
-  }
-
-  if (!resizedImageBuffer) throw new Error("Unsupported image format");
+  const outputImageBuffer = await compressImage(inputImageBuffer);
 
   await s3Client.send(
     new PutObjectCommand({
       Bucket: process.env.OUTPUT_S3_BUCKET_NAME,
       Key: inputImageKey,
-      Body: resizedImageBuffer,
+      Body: outputImageBuffer,
     })
   );
 }
