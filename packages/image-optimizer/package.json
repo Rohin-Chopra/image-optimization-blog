@@ -2,12 +2,12 @@
   "name": "image-optimization",
   "type": "module",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "src/handler.ts",
   "scripts": {
-    "build": "ts-node --esm esbuild.config.ts"
+    "build": "tsc && ts-node --esm esbuild.config.ts"
   },
   "keywords": [],
-  "author": "",
+  "author": "Rohin Chopra",
   "license": "ISC",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.388.0",
